@@ -1,3 +1,5 @@
+export const name = 'geo-locator';
+
 export function init($plugin, store) {
   const { product } = $plugin.DSL(store, $plugin.name);
 
@@ -7,5 +9,7 @@ export function init($plugin, store) {
     inStore:               'management',
     removable:             false,
     showClusterSwitcher:   false,
+    category:              'global',
+    to:                    { name, params: { cluster: 'local' } }
   });
 }
