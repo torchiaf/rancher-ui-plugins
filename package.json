@@ -18,6 +18,8 @@
   "scripts": {
     "dev": "./node_modules/.bin/nuxt dev",
     "nuxt": "./node_modules/.bin/nuxt",
-    "build": "./node_modules/.bin/nuxt build"
+    "build": "./node_modules/.bin/nuxt build",
+    "build-pkg": "./node_modules/@rancher/shell/scripts/build-pkg.sh",
+    "serve-pkgs": "./node_modules/@rancher/shell/scripts/serve-pkgs"
   }
 }
