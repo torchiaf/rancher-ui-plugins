@@ -1,0 +1,23 @@
+{
+  "name": "rancher-ui-plugins",
+  "version": "0.1.0",
+  "private": false,
+  "engines": {
+    "node": ">=12"
+  },
+  "dependencies": {
+    "@rancher/shell": "^0.3.0",
+    "core-js": "3.21.1",
+    "css-loader": "4.3.0",
+    "@types/lodash": "4.14.184",
+    "@rancher/components": "0.1.0-alpha.9"
+  },
+  "resolutions": {
+    "**/webpack": "4"
+  },
+  "scripts": {
+    "dev": "./node_modules/.bin/nuxt dev",
+    "nuxt": "./node_modules/.bin/nuxt",
+    "build": "./node_modules/.bin/nuxt build"
+  }
+}
