@@ -15,6 +15,7 @@ Vue.use(VueGoogleMaps, {
 
 interface NodeLocation {
   id: string;
+  address?: string;
   country?: string;
   region?: string;
   city?: string;
@@ -26,6 +27,7 @@ interface NodeLocation {
 interface Node {
   id: string;
   annotations: Record<string, string>;
+  status: { addresses: { address: string; type: string }[] };
 }
 
 interface Data {
@@ -50,6 +52,11 @@ export default Vue.extend<Data, any, any, any>({
           label:         'Node id',
           value:         'id',
           sort:          'id',
+        },
+        {
+          name:          'address',
+          label:         'IP',
+          value:         'address',
         },
         {
           name:          'country',
@@ -100,7 +107,8 @@ export default Vue.extend<Data, any, any, any>({
         .sort((nodeA: Node, nodeB: Node) => Number(nodeB.id || 0) - Number(nodeA.id || 0))
         .map((node: Node, index: number) => {
           let nodeLocation: NodeLocation = {
-            id: node.id,
+            id:      node.id,
+            address: node.status.addresses.find(d => d.type === 'InternalIP')?.address,
             index,
           };
 
@@ -172,7 +180,7 @@ export default Vue.extend<Data, any, any, any>({
       :center="{lat:20, lng:-10}"
       :zoom="2"
       map-type-id="terrain"
-      style="width: 802px; height: 400px"
+      style="width: 902px; height: 400px"
     >
       <GmapMarker
         v-for="x in nodeMarkers"
@@ -195,7 +203,7 @@ export default Vue.extend<Data, any, any, any>({
   }
 
   .locations-table {
-    width: 800px;
+    width: 900px;
     margin: 40px;
   }
 
