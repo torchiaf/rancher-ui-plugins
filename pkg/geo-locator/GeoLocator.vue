@@ -12,8 +12,22 @@ Vue.use(VueGoogleMaps, {
   },
 });
 
+interface NodeLocation {
+  id?: string;
+  country?: string;
+  region?: string;
+  city?: string;
+  lat?: string;
+  lon?: string;
+}
+
+interface Node {
+  id: string;
+  annotations: Record<string, string>;
+}
+
 interface Data {
-  nodes: any[],
+  nodes: Node[];
 }
 
 export default Vue.extend<Data, any, any, any>({
@@ -34,16 +48,16 @@ export default Vue.extend<Data, any, any, any>({
     },
 
     nodeLocations() {
-      return this.nodes.map((node: any) => {
-        let geoLocator: any = {};
+      return this.nodes.map((node: Node) => {
+        let nodeLocation: NodeLocation = {};
 
         for (const key of Object.keys(node.annotations)) {
           if (key.startsWith('geo-locator')) {
             const locationKey = (key.split('.') || [])[1];
 
             if (locationKey) {
-              geoLocator = {
-                ...geoLocator,
+              nodeLocation = {
+                ...nodeLocation,
                 [locationKey]: node.annotations[key],
               };
             }
@@ -52,9 +66,9 @@ export default Vue.extend<Data, any, any, any>({
 
         return {
           id:     node.id,
-          lat:    Number(geoLocator.lat),
-          lon:    Number(geoLocator.lon),
-          title: `${ node.id } \n${ geoLocator.city } - ${ geoLocator.region }, ${ geoLocator.country }`
+          lat:    Number(nodeLocation.lat),
+          lon:    Number(nodeLocation.lon),
+          title: `${ node.id } \n${ nodeLocation.city } - ${ nodeLocation.region }, ${ nodeLocation.country }`
         };
       });
     },
@@ -67,7 +81,6 @@ export default Vue.extend<Data, any, any, any>({
   <div class="geo-locator">
     <h1>Geo Locator</h1>
     <br>
-    <!-- <span v-for="x in nodeLocations" :key="x.id"> {{ x }}</span> -->
     <GmapMap
       :center="{lat:20, lng:-30}"
       :zoom="2"
