@@ -28,6 +28,7 @@ interface Node {
 }
 
 interface Data {
+  cluster: string;
   nodes: Node[];
   nodeLocationsHeaders: any[];
 }
@@ -40,17 +41,20 @@ export default Vue.extend<Data, any, any, any>({
 
   data() {
     return {
+      cluster:              'local',
       nodes:                [],
       nodeLocationsHeaders: [
         {
           name:          'id',
           label:         'Node id',
           value:         'id',
+          sort:          'id',
         },
         {
           name:          'country',
           label:         'Country',
           value:         'country',
+          sort:          'country',
         },
         {
           name:          'region',
@@ -86,24 +90,26 @@ export default Vue.extend<Data, any, any, any>({
     },
 
     nodeLocations() {
-      return this.nodes.map((node: Node) => {
-        let nodeLocation: NodeLocation = { id: node.id };
+      return this.nodes
+        .map((node: Node) => {
+          let nodeLocation: NodeLocation = { id: node.id };
 
-        for (const key of Object.keys(node.annotations)) {
-          if (key.startsWith('geo-locator')) {
-            const locationKey = (key.split('.') || [])[1];
+          for (const key of Object.keys(node.annotations)) {
+            if (key.startsWith('geo-locator')) {
+              const locationKey = (key.split('.') || [])[1];
 
-            if (locationKey) {
-              nodeLocation = {
-                ...nodeLocation,
-                [locationKey]: node.annotations[key],
-              };
+              if (locationKey) {
+                nodeLocation = {
+                  ...nodeLocation,
+                  [locationKey]: node.annotations[key],
+                };
+              }
             }
           }
-        }
 
-        return nodeLocation;
-      });
+          return nodeLocation;
+        })
+        .filter((node: NodeLocation) => node.lat !== undefined && node.lon !== undefined);
     },
 
     nodeMarkers() {
@@ -122,8 +128,6 @@ export default Vue.extend<Data, any, any, any>({
 <template>
   <div class="geo-locator">
     <h1>Geo Locator</h1>
-    <br>
-
     <SortableTable
       class="locations-table"
       :rows="nodeLocations"
@@ -133,9 +137,16 @@ export default Vue.extend<Data, any, any, any>({
       :table-actions="false"
       :row-actions="false"
       :paging="false"
+      default-sort-by="id"
     >
+      <template #title>
+        <div class="table-heading">
+          <h2>Cluster:</h2><h2 class="cluster-name">
+            {{ cluster }}
+          </h2>
+        </div>
+      </template>
     </SortableTable>
-
     <GmapMap
       :center="{lat:20, lng:-30}"
       :zoom="2"
@@ -158,11 +169,21 @@ export default Vue.extend<Data, any, any, any>({
   .geo-locator {
     align-items: center;
     display: flex;
-    justify-content: center;
+    // justify-content: center;
   }
 
   .locations-table {
     width: 698px;
     margin: 40px;
+  }
+
+  .table-heading {
+    display: flex;
+    flex-direction: row;
+    gap: 5px;
+
+    .cluster-name {
+      color: var(--link);
+    }
   }
 </style>
