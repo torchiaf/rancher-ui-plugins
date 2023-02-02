@@ -2,6 +2,7 @@
 import Vue from 'vue';
 import * as VueGoogleMaps from 'vue2-google-maps';
 import { NODE } from '@shell/config/types';
+import SortableTable from '@shell/components/SortableTable/index.vue';
 
 const CONF = require('./google-api-config.json');
 
@@ -28,14 +29,51 @@ interface Node {
 
 interface Data {
   nodes: Node[];
+  nodeLocationsHeaders: any[];
 }
 
 export default Vue.extend<Data, any, any, any>({
   name:   'GeoLocator',
   layout: 'plain',
 
+  components: { SortableTable },
+
   data() {
-    return { nodes: [] };
+    return {
+      nodes:                [],
+      nodeLocationsHeaders: [
+        {
+          name:          'id',
+          label:         'Node id',
+          value:         'id',
+        },
+        {
+          name:          'country',
+          label:         'Country',
+          value:         'country',
+        },
+        {
+          name:          'region',
+          label:         'Region',
+          value:         'region',
+        },
+        {
+          name:          'city',
+          label:         'City',
+          value:         'city',
+        },
+        {
+          name:          'lat',
+          label:         'Latitude',
+          value:         'lat',
+        },
+        {
+          name:          'lon',
+          label:         'Longitude',
+          value:         'lon',
+        },
+      ],
+    };
   },
 
   async fetch() {
@@ -49,7 +87,7 @@ export default Vue.extend<Data, any, any, any>({
 
     nodeLocations() {
       return this.nodes.map((node: Node) => {
-        let nodeLocation: NodeLocation = {};
+        let nodeLocation: NodeLocation = { id: node.id };
 
         for (const key of Object.keys(node.annotations)) {
           if (key.startsWith('geo-locator')) {
@@ -64,13 +102,17 @@ export default Vue.extend<Data, any, any, any>({
           }
         }
 
-        return {
-          id:     node.id,
-          lat:    Number(nodeLocation.lat),
-          lon:    Number(nodeLocation.lon),
-          title: `${ node.id } \n${ nodeLocation.city } - ${ nodeLocation.region }, ${ nodeLocation.country }`
-        };
+        return nodeLocation;
       });
+    },
+
+    nodeMarkers() {
+      return this.nodeLocations.map((nodeLocation: NodeLocation) => ({
+        id:     nodeLocation.id,
+        lat:    Number(nodeLocation.lat),
+        lon:    Number(nodeLocation.lon),
+        title: `${ nodeLocation.id } \n${ nodeLocation.city } - ${ nodeLocation.region }, ${ nodeLocation.country }`
+      }));
     },
   }
 
@@ -81,6 +123,19 @@ export default Vue.extend<Data, any, any, any>({
   <div class="geo-locator">
     <h1>Geo Locator</h1>
     <br>
+
+    <SortableTable
+      class="locations-table"
+      :rows="nodeLocations"
+      :headers="nodeLocationsHeaders"
+      key-field="id"
+      :search="false"
+      :table-actions="false"
+      :row-actions="false"
+      :paging="false"
+    >
+    </SortableTable>
+
     <GmapMap
       :center="{lat:20, lng:-30}"
       :zoom="2"
@@ -88,7 +143,7 @@ export default Vue.extend<Data, any, any, any>({
       style="width: 700px; height: 400px"
     >
       <GmapMarker
-        v-for="x in nodeLocations"
+        v-for="x in nodeMarkers"
         :key="x.id"
         :title="x.title"
         :position="{
@@ -100,13 +155,14 @@ export default Vue.extend<Data, any, any, any>({
   </div>
 </template>
 <style lang="scss" scoped>
-  h1 {
-    text-align: center;
-  }
-
   .geo-locator {
     align-items: center;
     display: flex;
     justify-content: center;
+  }
+
+  .locations-table {
+    width: 698px;
+    margin: 40px;
   }
 </style>
