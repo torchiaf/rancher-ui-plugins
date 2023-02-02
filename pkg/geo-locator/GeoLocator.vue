@@ -1,9 +1,16 @@
 <script lang="ts">
 import Vue from 'vue';
-
+import * as VueGoogleMaps from 'vue2-google-maps';
 import { NODE } from '@shell/config/types';
 
-// const CLUSTER_ID = 'local';
+const CONF = require('./google-api-config.json');
+
+Vue.use(VueGoogleMaps, {
+  load: {
+    key:       CONF.apiToken,
+    libraries: 'places',
+  },
+});
 
 interface Data {
   nodes: any[],
@@ -22,20 +29,33 @@ export default Vue.extend<Data, any, any, any>({
   },
 
   computed: {
+    googleApi() {
+      return (VueGoogleMaps as any).gmapApi();
+    },
+
     nodeLocations() {
       return this.nodes.map((node: any) => {
-        let nodeLocation = { id: node.id };
+        let geoLocator: any = {};
 
         for (const key of Object.keys(node.annotations)) {
           if (key.startsWith('geo-locator')) {
-            nodeLocation = {
-              ...nodeLocation,
-              [key.split('.')[1]]: node.annotations[key],
-            };
+            const locationKey = (key.split('.') || [])[1];
+
+            if (locationKey) {
+              geoLocator = {
+                ...geoLocator,
+                [locationKey]: node.annotations[key],
+              };
+            }
           }
         }
 
-        return nodeLocation;
+        return {
+          id:     node.id,
+          lat:    Number(geoLocator.lat),
+          lon:    Number(geoLocator.lon),
+          title: `${ node.id } \n${ geoLocator.city } - ${ geoLocator.region }, ${ geoLocator.country }`
+        };
       });
     },
   }
@@ -47,13 +67,23 @@ export default Vue.extend<Data, any, any, any>({
   <div class="geo-locator">
     <h1>Geo Locator</h1>
     <br>
-    <div v-for="node in nodeLocations" :key="node.id">
-      <span>Node: {{ node.id }}</span>
-      <br>
-      <span>country: {{ node.country }}</span><br>
-      <span>region: {{ node.region }}</span><br>
-      <span>city: {{ node.city }}</span>
-    </div>
+    <!-- <span v-for="x in nodeLocations" :key="x.id"> {{ x }}</span> -->
+    <GmapMap
+      :center="{lat:20, lng:-30}"
+      :zoom="2"
+      map-type-id="terrain"
+      style="width: 700px; height: 400px"
+    >
+      <GmapMarker
+        v-for="x in nodeLocations"
+        :key="x.id"
+        :title="x.title"
+        :position="{
+          lat: x.lat,
+          lng: x.lon,
+        }"
+      />
+    </GmapMap>
   </div>
 </template>
 <style lang="scss" scoped>

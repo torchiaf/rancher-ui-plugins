@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "resolveJsonModule": true,
     "allowJs": true,
     "target": "esnext",
     "module": "esnext",
@@ -23,6 +24,7 @@
       "@types/node",
       "@types/jest",
       "@types/lodash",
+      "@types/googlemaps",
       "@nuxt/types",
       "rancher",
       "shell"
