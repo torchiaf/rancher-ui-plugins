@@ -14,12 +14,13 @@ Vue.use(VueGoogleMaps, {
 });
 
 interface NodeLocation {
-  id?: string;
+  id: string;
   country?: string;
   region?: string;
   city?: string;
   lat?: string;
   lon?: string;
+  index: number;
 }
 
 interface Node {
@@ -76,6 +77,10 @@ export default Vue.extend<Data, any, any, any>({
           label:         'Longitude',
           value:         'lon',
         },
+        {
+          name:          'marker',
+          label:         'Marker',
+        },
       ],
     };
   },
@@ -91,8 +96,13 @@ export default Vue.extend<Data, any, any, any>({
 
     nodeLocations() {
       return this.nodes
-        .map((node: Node) => {
-          let nodeLocation: NodeLocation = { id: node.id };
+        .filter((node: Node) => node.annotations['geo-locator.lat'] !== undefined && node.annotations['geo-locator.lon'] !== undefined)
+        .sort((nodeA: Node, nodeB: Node) => Number(nodeB.id || 0) - Number(nodeA.id || 0))
+        .map((node: Node, index: number) => {
+          let nodeLocation: NodeLocation = {
+            id: node.id,
+            index,
+          };
 
           for (const key of Object.keys(node.annotations)) {
             if (key.startsWith('geo-locator')) {
@@ -108,20 +118,26 @@ export default Vue.extend<Data, any, any, any>({
           }
 
           return nodeLocation;
-        })
-        .filter((node: NodeLocation) => node.lat !== undefined && node.lon !== undefined);
+        });
     },
 
     nodeMarkers() {
-      return this.nodeLocations.map((nodeLocation: NodeLocation) => ({
+      return this.nodeLocations.map((nodeLocation: NodeLocation, index: number) => ({
         id:     nodeLocation.id,
         lat:    Number(nodeLocation.lat),
         lon:    Number(nodeLocation.lon),
-        title: `${ nodeLocation.id } \n${ nodeLocation.city } - ${ nodeLocation.region }, ${ nodeLocation.country }`
+        title: `${ nodeLocation.id } \n${ nodeLocation.city } - ${ nodeLocation.region }, ${ nodeLocation.country }`,
+        icon:  { url: this.icon(nodeLocation.index) },
       }));
     },
-  }
+  },
 
+  methods: {
+    icon(index: number) {
+      // TODO add more icons
+      return index < 4 ? require(`./assets/icons/${ index + 1 }.png`) : null;
+    }
+  },
 });
 
 </script>
@@ -146,12 +162,17 @@ export default Vue.extend<Data, any, any, any>({
           </h2>
         </div>
       </template>
+      <template #cell:marker="{row}">
+        <div class="markerCell">
+          <img :src="icon(row.index)" />
+        </div>
+      </template>
     </SortableTable>
     <GmapMap
-      :center="{lat:20, lng:-30}"
+      :center="{lat:20, lng:-10}"
       :zoom="2"
       map-type-id="terrain"
-      style="width: 700px; height: 400px"
+      style="width: 802px; height: 400px"
     >
       <GmapMarker
         v-for="x in nodeMarkers"
@@ -161,6 +182,7 @@ export default Vue.extend<Data, any, any, any>({
           lat: x.lat,
           lng: x.lon,
         }"
+        :icon="x.icon"
       />
     </GmapMap>
   </div>
@@ -173,7 +195,7 @@ export default Vue.extend<Data, any, any, any>({
   }
 
   .locations-table {
-    width: 698px;
+    width: 800px;
     margin: 40px;
   }
 
@@ -185,5 +207,9 @@ export default Vue.extend<Data, any, any, any>({
     .cluster-name {
       color: var(--link);
     }
+  }
+
+  .markerCell {
+    text-align: center;
   }
 </style>
