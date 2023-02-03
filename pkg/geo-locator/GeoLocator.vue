@@ -6,12 +6,7 @@ import SortableTable from '@shell/components/SortableTable/index.vue';
 
 const CONF = require('./google-api-config.json');
 
-Vue.use(VueGoogleMaps, {
-  load: {
-    key:       CONF.apiToken,
-    libraries: 'places',
-  },
-});
+Vue.use(VueGoogleMaps, { load: CONF });
 
 interface NodeLocation {
   id: string;

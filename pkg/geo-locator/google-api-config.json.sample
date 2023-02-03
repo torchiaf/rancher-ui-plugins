@@ -1,3 +1,4 @@
 {
-  "token": "API_TOKEN"
+  "key": "API_TOKEN",
+  "libraries": "places"
 }
