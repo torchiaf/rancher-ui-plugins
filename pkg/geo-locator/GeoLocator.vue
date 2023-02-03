@@ -126,7 +126,7 @@ export default Vue.extend<Data, any, any, any>({
     },
 
     nodeMarkers() {
-      return this.nodeLocations.map((nodeLocation: NodeLocation, index: number) => ({
+      return this.nodeLocations.map((nodeLocation: NodeLocation) => ({
         id:     nodeLocation.id,
         lat:    Number(nodeLocation.lat),
         lon:    Number(nodeLocation.lon),
@@ -139,7 +139,7 @@ export default Vue.extend<Data, any, any, any>({
   methods: {
     icon(index: number) {
       // TODO add more icons
-      return index < 4 ? require(`./assets/icons/${ index + 1 }.png`) : null;
+      return index <= 3 ? require(`./assets/icons/${ index }.png`) : null;
     }
   },
 });
