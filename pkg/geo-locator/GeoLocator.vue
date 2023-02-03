@@ -27,6 +27,7 @@ interface NodeLocation {
 interface Node {
   id: string;
   annotations: Record<string, string>;
+  creationTimestamp: string;
   status: { addresses: { address: string; type: string }[] };
 }
 
@@ -104,7 +105,7 @@ export default Vue.extend<Data, any, any, any>({
     nodeLocations() {
       return this.nodes
         .filter((node: Node) => node.annotations['geo-locator.lat'] !== undefined && node.annotations['geo-locator.lon'] !== undefined)
-        .sort((nodeA: Node, nodeB: Node) => Number(nodeB.id || 0) - Number(nodeA.id || 0))
+        .sort((nodeA: Node, nodeB: Node) => Date.parse(nodeA.creationTimestamp) - Date.parse(nodeB.creationTimestamp))
         .map((node: Node, index: number) => {
           let nodeLocation: NodeLocation = {
             id:      node.id,
